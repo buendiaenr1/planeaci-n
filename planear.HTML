@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asignación de Profesores y Salones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .schedule {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .room {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .room h3 {
+      margin: 0 0 10px;
+    }
+    .teacher-color {
+      position: relative;
+    }
+    .teacher-color::before {
+      content: '';
+      display: block;
+      height: 10px;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .warning {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Asignación de Profesores y Salones</h1>
+
+  <div id="app">
+    <h2>Profesores Disponibles</h2>
+    <table id="teachers-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Horas Disponibles</th>
+          <th>Materias (Horas Semanales)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Datos de profesores se generarán dinámicamente -->
+      </tbody>
+    </table>
+
+    <h2>Salones Disponibles</h2>
+    <div id="rooms-schedule" class="schedule"></div>
+    <div id="warnings" class="warning"></div>
+  </div>
+
+  <script>
+    const teachers = [
+      { 
+        name: "Ana López", 
+        availability: [
+          { day: "Lunes", slots: ["7:00 AM - 9:00 AM", "9:00 AM - 11:00 AM"] },
+          { day: "Miércoles", slots: ["1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM"] },
+          { day: "Viernes", slots: ["1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM"] },
+        ],
+        subjects: [
+          { name: "Matemáticas", hoursPerWeek: 6 },
+          { name: "Física", hoursPerWeek: 4 }
+        ] 
+      },
+      { 
+        name: "Carlos Ramírez", 
+        availability: [
+          { day: "Martes", slots: ["11:00 AM - 1:00 PM", "3:00 PM - 5:00 PM"] },
+          { day: "Jueves", slots: ["9:00 AM - 11:00 AM"] },
+          { day: "Lunes", slots: ["7:00 AM - 9:00 AM","9:00 AM - 11:00 AM","11:00 AM - 1:00 PM"] },
+          { day: "Viernes", slots: ["7:00 AM - 9:00 AM","9:00 AM - 11:00 AM","11:00 AM - 1:00 PM"] },
+        ],
+        subjects: [
+          { name: "Química", hoursPerWeek: 5 },
+          { name: "Biología", hoursPerWeek: 10 }
+        ] 
+      },
+      { 
+        name: "Elena Gómez", 
+        availability: [
+          { day: "Lunes", slots: ["5:00 PM - 7:00 PM"] },
+          { day: "Viernes", slots: ["7:00 AM - 9:00 AM", "1:00 PM - 3:00 PM"] },
+        ],
+        subjects: [
+          { name: "Historia", hoursPerWeek: 4 },
+          { name: "Literatura", hoursPerWeek: 6 }
+        ] 
+      },
+      { 
+        name: "Javier Torres", 
+        availability: [
+          { day: "Miércoles", slots: ["9:00 AM - 11:00 AM", "11:00 AM - 1:00 PM"] },
+          { day: "Viernes", slots: ["3:00 PM - 5:00 PM"] },
+        ],
+        subjects: [
+          { name: "Inglés", hoursPerWeek: 5 },
+          { name: "Español", hoursPerWeek: 5 }
+        ] 
+      },
+      { 
+        name: "Laura Martínez", 
+        availability: [
+          { day: "Martes", slots: ["7:00 AM - 9:00 AM"] },
+          { day: "Jueves", slots: ["1:00 PM - 3:00 PM"] },
+        ],
+        subjects: [
+          { name: "Matemáticas", hoursPerWeek: 6 },
+          { name: "Química", hoursPerWeek: 4 }
+        ] 
+      },
+      { 
+        name: "Miguel Sánchez", 
+        availability: [
+          { day: "Lunes", slots: ["3:00 PM - 5:00 PM"] },
+          { day: "Viernes", slots: ["11:00 AM - 1:00 PM"] },
+        ],
+        subjects: [
+          { name: "Física", hoursPerWeek: 4 },
+          { name: "Biología", hoursPerWeek: 10 }
+        ] 
+      },
+      { 
+        name: "Sofía Díaz", 
+        availability: [
+          { day: "Martes", slots: ["1:00 PM - 3:00 PM", "5:00 PM - 7:00 PM"] },
+          { day: "Jueves", slots: ["7:00 AM - 9:00 AM"] },
+        ],
+        subjects: [
+          { name: "Historia", hoursPerWeek: 4 },
+          { name: "Inglés", hoursPerWeek: 5 }
+        ] 
+      },
+      { 
+        name: "Diego Fernández", 
+        availability: [
+          { day: "Miércoles", slots: ["5:00 PM - 7:00 PM"] },
+          { day: "Viernes", slots: ["9:00 AM - 11:00 AM"] },
+        ],
+        subjects: [
+          { name: "Literatura", hoursPerWeek: 6 },
+          { name: "Español", hoursPerWeek: 4 }
+        ] 
+      },
+      { 
+        name: "Valeria Castro", 
+        availability: [
+          { day: "Lunes", slots: ["11:00 AM - 1:00 PM"] },
+          { day: "Martes", slots: ["3:00 PM - 5:00 PM"] },
+        ],
+        subjects: [
+          { name: "Matemáticas", hoursPerWeek: 6 },
+          { name: "Física", hoursPerWeek: 4 }
+        ] 
+      },
+      { 
+        name: "Pablo Rojas", 
+        availability: [
+          { day: "Jueves", slots: ["5:00 PM - 7:00 PM", "7:00 PM - 9:00 PM"] },
+          { day: "Viernes", slots: ["7:00 AM - 9:00 AM"] },
+        ],
+        subjects: [
+          { name: "Química", hoursPerWeek: 5 },
+          { name: "Biología", hoursPerWeek: 10 }
+        ] 
+      },
+    ];
+
+    const rooms = ["Sala A", "Sala B", "Sala C", "Sala D", "Sala E"];
+    const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+    const timeSlots = ["7:00 AM - 9:00 AM", "9:00 AM - 11:00 AM", "11:00 AM - 1:00 PM", "1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM", "5:00 PM - 7:00 PM", "7:00 PM - 9:00 PM"];
+
+    // Generar colores únicos para cada profesor
+    const teacherColors = {};
+    teachers.forEach((teacher, index) => {
+      teacherColors[teacher.name] = `hsl(${index * 36}, 70%, 50%)`;
+    });
+
+    function generateTeacherTable() {
+      const tbody = document.querySelector("#teachers-table tbody");
+      teachers.forEach((teacher) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td style="background-color: ${teacherColors[teacher.name]}; color: white;">${teacher.name}</td>
+          <td>${teacher.availability.map(avail => `${avail.day}: ${avail.slots.join(", ")}`).join("; ")}</td>
+          <td>${teacher.subjects.map(subject => `${subject.name} (${subject.hoursPerWeek} hrs)`).join(", ")}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function assignTeachersToRooms() {
+      const scheduleContainer = document.getElementById("rooms-schedule");
+      scheduleContainer.innerHTML = "";
+
+      // Crear una copia de las asignaturas con horas restantes
+      const subjectsRemaining = teachers.flatMap(teacher =>
+        teacher.subjects.map(subject => ({
+          teacher: teacher.name,
+          subject: subject.name,
+          hoursRemaining: subject.hoursPerWeek
+        }))
+      );
+
+      // Rastrear la disponibilidad de los profesores por día y hora
+      const teacherSchedule = teachers.reduce((acc, teacher) => {
+        acc[teacher.name] = {};
+        daysOfWeek.forEach(day => {
+          acc[teacher.name][day] = {};
+          timeSlots.forEach(slot => {
+            acc[teacher.name][day][slot] = false; // Inicialmente no está ocupado
+          });
+        });
+        return acc;
+      }, {});
+
+      // Rastrear las horas asignadas a cada profesor
+      const teacherHoursAssigned = teachers.reduce((acc, teacher) => {
+        acc[teacher.name] = 0;
+        return acc;
+      }, {});
+
+      // Iterar sobre los días y las salas para asignar materias
+      daysOfWeek.forEach((day) => {
+        rooms.forEach((room) => {
+          const roomDiv = document.createElement("div");
+          roomDiv.classList.add("room");
+          roomDiv.innerHTML = `<h3>${room}</h3>`;
+
+          const scheduleTable = document.createElement("table");
+          scheduleTable.innerHTML = `
+            <thead>
+              <tr>
+                <th>Día/Hora</th>
+                ${timeSlots.map((slot) => `<th>${slot}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${day}</td>
+                ${timeSlots
+                  .map((slot) => {
+                    // Filtrar materias que aún tienen horas disponibles
+                    const availableSubjects = subjectsRemaining.filter(subject => {
+                      const teacher = teachers.find(t => t.name === subject.teacher);
+                      return (
+                        teacher.availability.some(avail => avail.day === day && avail.slots.includes(slot)) &&
+                        subject.hoursRemaining > 0 &&
+                        !teacherSchedule[teacher.name][day][slot] && // Verificar que el profesor no esté ocupado
+                        teacherHoursAssigned[teacher.name] + 2 <= 20 // Verificar límite de horas del profesor
+                      );
+                    });
+
+                    if (availableSubjects.length > 0) {
+                      const selectedSubject = availableSubjects[0];
+                      selectedSubject.hoursRemaining -= 2; // Reducir 2 horas por slot
+                      teacherSchedule[selectedSubject.teacher][day][slot] = true; // Marcar al profesor como ocupado
+                      teacherHoursAssigned[selectedSubject.teacher] += 2; // Incrementar las horas asignadas
+
+                      const teacher = teachers.find(t => t.name === selectedSubject.teacher);
+                      return `
+                        <td class="teacher-color" style="background-color: ${teacherColors[teacher.name]}; color: white;">
+                          ${teacher.name}<br>${selectedSubject.subject}
+                        </td>
+                      `;
+                    } else {
+                      return `<td>-</td>`;
+                    }
+                  })
+                  .join("")}
+              </tr>
+            </tbody>
+          `;
+
+          roomDiv.appendChild(scheduleTable);
+          scheduleContainer.appendChild(roomDiv);
+        });
+      });
+
+      // Mostrar advertencias si faltan horas por asignar
+      const incompleteSubjects = subjectsRemaining.filter(subject => subject.hoursRemaining > 0);
+      const warningsDiv = document.getElementById("warnings");
+      if (incompleteSubjects.length > 0) {
+        warningsDiv.innerHTML = "<p><strong>Advertencia:</strong> No se pudieron asignar todas las horas de las siguientes asignaturas:</p>";
+        incompleteSubjects.forEach(subject => {
+          const warningMessage = document.createElement("p");
+          warningMessage.textContent = `- Profesor: ${subject.teacher}, Asignatura: ${subject.subject}, Horas pendientes: ${subject.hoursRemaining}`;
+          warningMessage.classList.add("warning");
+          warningsDiv.appendChild(warningMessage);
+        });
+      } else {
+        warningsDiv.innerHTML = "<p>Todas las asignaturas han sido asignadas correctamente.</p>";
+      }
+
+      // Verificar traslape de horarios para cada profesor
+      const overlapWarnings = [];
+      teachers.forEach(teacher => {
+        daysOfWeek.forEach(day => {
+          const occupiedSlots = timeSlots.filter(slot => teacherSchedule[teacher.name][day][slot]);
+          if (occupiedSlots.length > 1) {
+            // Verificar si hay traslape en los slots consecutivos
+            for (let i = 1; i < occupiedSlots.length; i++) {
+              const currentSlot = occupiedSlots[i];
+              const previousSlot = occupiedSlots[i - 1];
+              const currentTime = timeSlots.indexOf(currentSlot);
+              const previousTime = timeSlots.indexOf(previousSlot);
+
+              if (currentTime - previousTime === 1) {
+                overlapWarnings.push(`Profesor: ${teacher.name}, Día: ${day}, Traslape entre: ${previousSlot} y ${currentSlot}`);
+              }
+            }
+          }
+        });
+      });
+
+      if (overlapWarnings.length > 0) {
+        const overlapDiv = document.createElement("div");
+        overlapDiv.innerHTML = "<p><strong>Errores de traslape de horarios:</strong></p>";
+        overlapWarnings.forEach(warning => {
+          const warningMessage = document.createElement("p");
+          warningMessage.textContent = warning;
+          warningMessage.classList.add("warning");
+          overlapDiv.appendChild(warningMessage);
+        });
+        warningsDiv.appendChild(overlapDiv);
+      }
+    }
+
+    generateTeacherTable();
+    assignTeachersToRooms();
+  </script>
+</body>
+</html>
